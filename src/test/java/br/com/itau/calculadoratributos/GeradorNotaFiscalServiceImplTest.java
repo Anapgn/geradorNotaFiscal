@@ -1,35 +1,47 @@
 package br.com.itau.calculadoratributos;
 
 import br.com.itau.geradornotafiscal.model.*;
-import br.com.itau.geradornotafiscal.service.CalculadoraAliquotaProduto;
+import br.com.itau.geradornotafiscal.service.*;
 import br.com.itau.geradornotafiscal.service.impl.GeradorNotaFiscalServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class GeradorNotaFiscalServiceImplTest {
 
+
+    private final CalculadoraAliquotaProdutoService calculadoraAliquotaProdutoService = new CalculadoraAliquotaProdutoService();
+
+    @Mock
+    private EntregaService entregaService;
+    @Mock
+    private RegistroService registroService;
+    @Mock
+    private EstoqueService estoqueService;
+    @Mock
+    private FinanceiroService financeiroService;
     @InjectMocks
     private GeradorNotaFiscalServiceImpl geradorNotaFiscalService;
 
-    @Mock
-    private CalculadoraAliquotaProduto calculadoraAliquotaProduto;
-
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.openMocks(this);
+        geradorNotaFiscalService = new GeradorNotaFiscalServiceImpl(
+                calculadoraAliquotaProdutoService,
+                estoqueService,
+                registroService,
+                entregaService,
+                financeiroService
+        );
     }
-
 
 
     @Test
@@ -59,6 +71,7 @@ public class GeradorNotaFiscalServiceImplTest {
         assertEquals(pedido.getValorTotalItens(), notaFiscal.getValorTotalItens());
         assertEquals(1, notaFiscal.getItens().size());
         assertEquals(0, notaFiscal.getItens().get(0).getValorTributoItem());
+
     }
 
     @Test
@@ -88,7 +101,8 @@ public class GeradorNotaFiscalServiceImplTest {
 
         assertEquals(pedido.getValorTotalItens(), notaFiscal.getValorTotalItens());
         assertEquals(1, notaFiscal.getItens().size());
-        assertEquals(0.20 * item.getValorUnitario(), notaFiscal.getItens().get(0).getValorTributoItem());
+        assertEquals(0.20 * item.getValorUnitario() * item.getQuantidade(), notaFiscal.getItens().get(0).getValorTributoItem());
+
     }
 
 }
